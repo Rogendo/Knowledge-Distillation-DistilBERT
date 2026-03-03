@@ -54,11 +54,30 @@ class MultiHeadQADataset(Dataset):
             max_length=self.max_length,
             return_tensors="pt"
         )
-        labels = {head: torch.tensor(item['labels'][head], dtype=torch.float) for head in qa_heads_config}
+        raw_labels = item['labels']
+        if isinstance(raw_labels, str):
+            raw_labels = json.loads(raw_labels)
+        label_tensors = {}
+        for head, expected_size in qa_heads_config.items():
+            raw = list(raw_labels[head])
+            # Coerce each value to float; non-numeric sentinels (e.g. 'No hold
+            # was required') become 0.0 — head was not applicable for this call
+            coerced = []
+            for v in raw:
+                try:
+                    coerced.append(float(v))
+                except (ValueError, TypeError):
+                    coerced.append(0.0)
+            # Truncate if longer than expected, pad with 0.0 if shorter
+            if len(coerced) > expected_size:
+                coerced = coerced[:expected_size]
+            elif len(coerced) < expected_size:
+                coerced = coerced + [0.0] * (expected_size - len(coerced))
+            label_tensors[head] = torch.tensor(coerced, dtype=torch.float)
         return {
             'input_ids': encoding['input_ids'].squeeze(0),
             'attention_mask': encoding['attention_mask'].squeeze(0),
-            'labels': labels
+            'labels': label_tensors
         }
 
 # --- Collate Function ---
@@ -119,7 +138,13 @@ def train_model(config):
     mlflow.set_experiment(config['mlflow']['experiment_name'])
 
     # Data Loading and Splitting
-    df = pd.read_json(config['data']['train_data_path'])
+    with open(config['data']['train_data_path'], encoding='utf-8') as f:
+        records = json.load(f)
+    # Pre-parse labels from JSON string if stored as a string
+    for rec in records:
+        if isinstance(rec['labels'], str):
+            rec['labels'] = json.loads(rec['labels'])
+    df = pd.DataFrame(records)
     train_df, test_df = train_test_split(df, test_size=config['data']['test_size'], random_state=config['data']['random_seed'])
     train_df, val_df = train_test_split(train_df, test_size=config['data']['val_size'], random_state=config['data']['random_seed'])
     

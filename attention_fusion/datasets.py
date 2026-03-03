@@ -298,10 +298,23 @@ class QADataset(Dataset):
             return_tensors='pt',
         )
 
-        label_tensors = {
-            head: torch.tensor(labels_dict[head], dtype=torch.float)
-            for head in QA_HEAD_CONFIG
-        }
+        label_tensors = {}
+        for head, expected_size in QA_HEAD_CONFIG.items():
+            raw = list(labels_dict[head])
+            # Coerce each value to float; non-numeric sentinels (e.g. 'No hold
+            # was required') become 0.0 — head was not applicable for this call
+            coerced = []
+            for v in raw:
+                try:
+                    coerced.append(float(v))
+                except (ValueError, TypeError):
+                    coerced.append(0.0)
+            # Truncate if longer than expected, pad with 0.0 if shorter
+            if len(coerced) > expected_size:
+                coerced = coerced[:expected_size]
+            elif len(coerced) < expected_size:
+                coerced = coerced + [0.0] * (expected_size - len(coerced))
+            label_tensors[head] = torch.tensor(coerced, dtype=torch.float)
 
         return {
             'input_ids': encoding['input_ids'].squeeze(0),

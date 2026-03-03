@@ -52,11 +52,30 @@ class MultiHeadQADataset(Dataset):
             max_length=self.max_length,
             return_tensors="pt"
         )
-        labels = {head: torch.tensor(item['labels'][head], dtype=torch.float) for head in qa_heads_config}
+        raw_labels = item['labels']
+        if isinstance(raw_labels, str):
+            raw_labels = json.loads(raw_labels)
+        label_tensors = {}
+        for head, expected_size in qa_heads_config.items():
+            raw = list(raw_labels[head])
+            # Coerce each value to float; non-numeric sentinels (e.g. 'No hold
+            # was required') become 0.0 — head was not applicable for this call
+            coerced = []
+            for v in raw:
+                try:
+                    coerced.append(float(v))
+                except (ValueError, TypeError):
+                    coerced.append(0.0)
+            # Truncate if longer than expected, pad with 0.0 if shorter
+            if len(coerced) > expected_size:
+                coerced = coerced[:expected_size]
+            elif len(coerced) < expected_size:
+                coerced = coerced + [0.0] * (expected_size - len(coerced))
+            label_tensors[head] = torch.tensor(coerced, dtype=torch.float)
         return {
             'input_ids': encoding['input_ids'].squeeze(0),
             'attention_mask': encoding['attention_mask'].squeeze(0),
-            'labels': labels
+            'labels': label_tensors
         }
 
 # --- Collate Function ---

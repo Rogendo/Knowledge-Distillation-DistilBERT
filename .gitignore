@@ -1,1 +1,7 @@
 /data
+attention_fusion/attention_fusion_model/
+attention_fusion/__pycache__/
+attention_fusion/mlruns/
+attention_fusion/__pycache__/model.cpython-312.pyc
+attention_fusion/__pycache__/datasets.cpython-312.pyc
+attention_fusion/__pycache__/model.cpython-312.pyc

@@ -8,7 +8,7 @@ model:
 
 # Data Configuration
 data:
-  train_data_path: "/home/rogendo/Work/Training/ai/ai_service/datasets/qa-scoring/qa_score_data_v01.json"
+  train_data_path: "../data/synthetic_qa_metrics_data_v01x.json"
   test_data_path: "test_data.json"
   test_size: 0.2
   val_size: 0.1  # As fraction of train data
