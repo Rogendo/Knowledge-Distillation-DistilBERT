@@ -1,0 +1,55 @@
+# QA Multi-Head Model Configuration
+# Model Configuration
+model:
+  base_model: "distilbert-base-uncased"
+  output_dir: "/home/rogendo/Desktop/openchs_rnd/tasks/quality_assurance/qa_model_versions/"
+  dropout: 0.1
+  
+
+# Data Configuration
+data:
+  train_data_path: "/home/rogendo/Work/Training/ai/ai_service/datasets/qa-scoring/qa_score_data_v01.json"
+  test_data_path: "test_data.json"
+  test_size: 0.2
+  val_size: 0.1  # As fraction of train data
+  random_seed: 42
+  shuffle: true
+  
+# Tokenizer Configuration
+tokenizer:
+  max_length: 256
+  padding: "max_length"
+  truncation: true
+
+# Training Configuration
+training:
+  learning_rate: 2.0e-5
+  batch_size: 4
+  num_epochs: 10
+  weight_decay: 0.01
+  warmup_steps: 100
+  gradient_accumulation_steps: 1
+  max_grad_norm: 1.0
+  early_stopping_patience: 3
+  early_stopping_min_delta: 0.001
+  
+# MLflow Configuration
+mlflow:
+  tracking_uri: "http://192.168.8.18:5000"
+  experiment_name: "QA_Multihead_Scoring_Model"
+  registered_model_name: "QA_MultiHead_DistilBERT"
+  log_interval: 10  # Log metrics every N steps
+  
+# Output Configuration
+output:
+  save_best_model: true
+  save_final_model: true
+  save_every_epoch: false
+  metrics_file_path: "qa_model_versions/qa_model_metrics.json"
+  predictions_file: "qa_predictions.csv"
+  
+# Logging Configuration
+logging:
+  level: "INFO"  # Options: DEBUG, INFO, WARNING, ERROR
+  log_file: "qa_training.log"
+  console_output: true

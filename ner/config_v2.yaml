@@ -1,0 +1,58 @@
+
+# NER Training Configuration
+
+
+experiment:
+  name: "ner_v1"
+  author: "Rogendo"
+  date: "2025-09-28"
+
+data:
+  dataset_path: "ner_synthetic_dataset_v2.jsonl"
+  test_size: 0.1
+  validation_size: 0.1
+  
+model:
+  model_name: "distilbert-base-cased"
+  tokenizer_name: "distilbert-base-cased" 
+  
+tokenizer:
+  max_length: 512
+  padding: "max_length"
+  truncation: true
+  return_offsets_mapping: true
+  
+training:
+  output_dir: "./ner_model"
+  num_train_epochs: 5
+  per_device_train_batch_size: 8
+  per_device_eval_batch_size: 8
+  learning_rate: 0.00002  # 2e-5 as decimal to avoid YAML parsing issues
+  weight_decay: 0.01
+  warmup_ratio: 0.1
+  logging_dir: "./logs"
+  logging_steps: 500
+  eval_strategy: "steps"
+  eval_steps: 1000
+  save_strategy: "steps"
+  save_steps: 1000
+  save_total_limit: 3
+  load_best_model_at_end: true
+  metric_for_best_model: "eval_f1"
+  greater_is_better: true
+  report_to: []  # Disable wandb/tensorboard unless needed
+  
+output:
+  model_save_dir: "./ner-distilbert-en-synthetic-v2"
+  metrics_file: "metrics_v2.json"
+  
+compute_metrics:
+  average_method: "weighted"  # Options: macro, micro, weighted
+  
+# Optional: Seed for reproducibility
+seed: 42
+
+# Optional: Device settings
+device:
+  use_cuda: true
+  mixed_precision: false 

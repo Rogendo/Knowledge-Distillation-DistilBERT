@@ -1,0 +1,48 @@
+# Model Configuration
+model:
+  checkpoint: "distilbert-base-uncased"
+  output_dir: "/home/rogendo/chl_scratch/multitask_distilbert_versions/"
+  embeddings_dir: "embeddings"
+  
+# Data Configuration
+data:
+  input_path: "/home/rogendo/Desktop/openchs_rnd/notebooks/rodgendo/classification/cleaned_synthetic_data_v1.json"
+  test_split_output: "/home/rogendo/chl_scratch/test_data/test_split.csv"
+  test_size: 0.1
+  random_seed: 42
+  
+# Tokenizer Configuration
+tokenizer:
+  max_length: 512
+  padding: "max_length"
+  truncation: true
+
+# Training Configuration
+training:
+  learning_rate: 2.0e-5
+  per_device_train_batch_size: 16
+  per_device_eval_batch_size: 16
+  num_train_epochs: 12
+  weight_decay: 0.01
+  eval_strategy: "epoch"
+  save_strategy: "epoch"
+  load_best_model_at_end: true
+  metric_for_best_model: "eval_avg_acc"
+  greater_is_better: true
+  logging_steps: 100
+
+# MLflow Configuration
+mlflow:
+  tracking_uri: "http://192.168.8.18:5000"
+  experiment_name: "Multitask_Classification"
+  registered_model_name: "MultiTaskDistilBert"
+
+# Output Files
+output:
+  # Use absolute paths or paths relative to model output directory
+  labels_dir: "/home/rogendo/Desktop/openchs_rnd/notebooks/rodgendo/classification/labels"
+  main_categories_file: "main_categories.json"
+  sub_categories_file: "sub_categories.json"
+  interventions_file: "interventions.json"
+  priorities_file: "priorities.json"
+  metrics_file: "multilabel_model_metrics.json"

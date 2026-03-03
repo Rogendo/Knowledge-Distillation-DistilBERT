@@ -1,0 +1,38 @@
+backbone:
+  model_name: "distilbert-base-cased"
+  dropout: 0.1
+
+data:
+  ner_path: "../data/ner_synthetic_dataset_v1.jsonl"
+  classification_path: "../data/cases_generated_data_v0005.json"
+  qa_path: "../data/synthetic_qa_metrics_data_v01x.json"
+  test_size: 0.1
+  random_seed: 42
+
+tokenizer:
+  max_length: 512        # DistilBERT's hard limit
+  padding: "max_length"
+  truncation: true
+  # NER records exceeding max_length are FILTERED OUT (not truncated) because
+  # truncation would silently drop entity labels at the end of the text.
+  # CLS and QA records are truncated safely — their labels are sentence-level.
+
+training:
+  num_epochs: 10
+  batch_size: 16
+  learning_rate: 2.0e-5
+  weight_decay: 0.01
+  warmup_ratio: 0.1
+  max_grad_norm: 1.0
+  early_stopping_patience: 3
+
+output:
+  model_dir: "./attention_fusion_model"
+  label_maps_file: "label_maps.json"
+  metrics_file: "metrics.json"
+
+mlflow:
+  enabled: true
+  tracking_uri: "file:./mlruns"       # local file store — no server needed
+  experiment_name: "attention_fusion_multitask"
+  run_name: "multitask_train"
